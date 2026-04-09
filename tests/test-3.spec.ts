@@ -1,0 +1,38 @@
+import { test, expect } from '@playwright/test';
+
+
+
+
+test('test', async ({ page }) => {
+  await page.goto('https://staging.kapiva.in/');
+  await page.getByText('KAPIVA - TESTINGThis is our').click();
+  await page.getByRole('img').first().click();
+  await page.getByText('SELECT CONCERN:Gym FoodsHeart').click();
+  await page.locator('div').filter({ hasText: /^Gym Foods$/ }).click();
+  await page.locator('span').filter({ hasText: 'Gym Foods' }).click();
+  await page.getByRole('button', { name: 'BUY NOW' }).nth(1).click();
+  await page.getByText('KAPIVA - TESTINGThis is our').click();
+  await page.getByRole('img').first().click();
+  await page.getByRole('textbox', { name: 'Phone No.' }).click();
+  await page.getByRole('textbox', { name: 'Phone No.' }).fill('7411849065');
+  await page.getByRole('textbox', { name: 'Email Address' }).click();
+  await page.getByRole('textbox', { name: 'Email Address' }).fill('santosh.kumbar@kapiva.in');
+  await page.getByRole('textbox', { name: 'Full Name' }).click();
+  await page.getByRole('textbox', { name: 'Full Name' }).fill('santosh k');
+  await page.getByRole('textbox', { name: 'Address (House No., Building' }).click();
+  await page.getByRole('textbox', { name: 'Address (House No., Building' }).fill('tech demo');
+  await page.getByRole('textbox', { name: 'Pincode' }).click();
+  await page.getByRole('textbox', { name: 'Pincode' }).fill('400001');
+  await page.getByText('UPICredit/Debit').click();
+  await page.getByRole('listitem').filter({ hasText: 'Netbanking' }).click();
+  await page.locator('#choosePaymentMethods_choosePaymentMethod__yPZmB').getByRole('combobox').selectOption('NB_AXIS');
+  await page.getByText('PLACE ORDER : ₹851.20 1,144.00PAY SECURELY₹').click();
+  await page.getByText('Kapiva Choose the statuses').click();
+  await page.getByRole('button', { name: 'Select Options' }).click();
+  await page.getByRole('listitem').filter({ hasText: 'CHARGED' }).click();
+  await page.getByRole('button', { name: 'Submit' }).click();
+  await page.getByText('KAPIVA - TESTINGThis is our').click();
+  await page.locator('svg').click();
+  await page.getByText('Order ID');
+  await page.getByText('Grand Total:₹').click();
+});

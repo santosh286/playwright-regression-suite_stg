@@ -1,0 +1,9 @@
+@track
+Feature: Track Order
+
+  @smoke
+  Scenario: Track order successfully
+    Given user is on Kapiva tracking page
+    When user enters order id "15142"
+    And user clicks on Track button
+    Then order status should be visible

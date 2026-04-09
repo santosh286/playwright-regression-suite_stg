@@ -1,0 +1,26 @@
+{
+  "name": "playwrite",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "allure:generate": "allure generate allure-results --clean",
+    "allure:open": "allure open allure-report",
+    "test:allure": "playwright test && allure generate allure-results --clean && allure open allure-report"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@cucumber/cucumber": "^12.6.0",
+    "@playwright/test": "^1.57.0",
+    "@types/node": "^25.0.9",
+    "allure-commandline": "^2.36.0",
+    "allure-playwright": "^3.4.5",
+    "playwright-bdd": "^8.4.2"
+  }
+}
