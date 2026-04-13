@@ -1,6 +1,6 @@
 # Playwright Regression Suite — Kapiva Staging
 
-End-to-end regression test suite for [staging.kapiva.in](https://staging.kapiva.in) built with **Playwright + TypeScript** using the **Page Object Model (POM)** pattern.
+End-to-end regression test suite for [staging.kapiva.in](https://staging.kapiva.in) built with **Playwright + TypeScript**.
 
 ---
 
@@ -8,11 +8,11 @@ End-to-end regression test suite for [staging.kapiva.in](https://staging.kapiva.
 
 | Tool | Version |
 |---|---|
-| [Playwright](https://playwright.dev) | Latest |
+| [Playwright](https://playwright.dev) | ^1.57 |
 | TypeScript | Latest |
-| Browser | Chrome (1512×861 viewport) |
+| Browser | Chrome (Mobile Chrome — 390×844 viewport) |
 | Reporter | HTML + Allure |
-| CI/CD | GitHub Actions |
+| CI/CD | GitHub Actions (manual trigger) |
 
 ---
 
@@ -21,24 +21,12 @@ End-to-end regression test suite for [staging.kapiva.in](https://staging.kapiva.
 ```
 playwright-regression-suite_stg/
 │
-├── pages/                          # Page Object Model classes
-│   ├── AppPage.ts                  # Get App, WhatsApp, Shop on App
-│   ├── BannerPage.ts               # Homepage banner link validation
-│   ├── BestPricePage.ts            # Best price coupon flow
-│   ├── CheckoutPage.ts             # Core: home, product, address, payment, ETA, free gift
-│   ├── ConcernPage.ts              # Concern tiles & product crawl
-│   ├── FooterPage.ts               # Footer links & icons
-│   ├── HeroProductsPage.ts         # Product search & card validation
-│   ├── HomePage.ts                 # Homepage, concerns, popup
-│   ├── LoginPage.ts                # Login via header & hamburger, OTP
-│   ├── PincodePage.ts              # Pincode panel
-│   ├── ProductSectionPage.ts       # Bestsellers & New Arrivals
-│   ├── SearchPages.ts              # Search box & results
-│   ├── SideMenuPage.ts             # Hamburger side drawer
-│   └── TrackOrderPage.ts           # Track order
+├── utils/
+│   ├── globalSetup.ts              # Pre-flight: pings staging before tests run
+│   └── helpers.ts                  # navigateTo() with retry + closePopupIfPresent()
 │
 ├── tests/
-│   └── regression/                 # 26 regression spec files
+│   └── regression/                 # 27 regression spec files
 │       ├── best-price-online.spec.ts
 │       ├── bestsellers.spec.ts
 │       ├── cart-checkout.spec.ts
@@ -52,9 +40,11 @@ playwright-regression-suite_stg/
 │       ├── hamburger-menu.spec.ts
 │       ├── hero-products.spec.ts
 │       ├── homepage-banners.spec.ts
+│       ├── inspect.spec.ts
 │       ├── login-page.spec.ts
 │       ├── new-arrivals.spec.ts
 │       ├── pdp-radio-logo.spec.ts
+│       ├── pdp-share-copy-link.spec.ts
 │       ├── pincode.spec.ts
 │       ├── place-order.spec.ts
 │       ├── place-order-best-price.spec.ts
@@ -67,45 +57,69 @@ playwright-regression-suite_stg/
 │
 ├── .github/
 │   └── workflows/
-│       └── playwright.yml          # GitHub Actions CI pipeline
+│       └── playwright.yml          # GitHub Actions CI pipeline (manual trigger)
 │
 ├── playwright.config.js            # Playwright configuration
 ├── package.json
+├── CLAUDE.md                       # Project instructions for Claude Code
 └── README.md
 ```
 
 ---
 
-## Test Coverage
+## Test Coverage (27 Specs)
 
-| # | Spec File | What It Tests |
-|---|---|---|
-| 1 | `place-order.spec.ts` | Full E2E order via UPI |
-| 2 | `place-order-upi.spec.ts` | UPI payment with coupon |
-| 3 | `place-order-netbanking.spec.ts` | NetBanking payment |
-| 4 | `place-order-best-price.spec.ts` | Best Price Online coupon |
-| 5 | `best-price-online.spec.ts` | Price before/after coupon |
-| 6 | `free-gift-checkout.spec.ts` | Free gift selection + order |
-| 7 | `coupon-upi-checkout.spec.ts` | Coupon "Save 5" + UPI order |
-| 8 | `eta-verification.spec.ts` | ETA match: PDP → Checkout → Thank You |
-| 9 | `cart-checkout.spec.ts` | Product name consistency: Listing → Cart → Checkout |
-| 10 | `hero-products.spec.ts` | Search 7 hero products, verify ATC + Buy Now |
-| 11 | `concerns.spec.ts` | SELECT CONCERN tiles: image + name + broken image check |
-| 12 | `concern-products-crawl.spec.ts` | All concern products: ATC + Buy Now crawl |
-| 13 | `bestsellers.spec.ts` | Bestsellers section product cards |
-| 14 | `new-arrivals.spec.ts` | New Arrivals section product cards |
-| 15 | `homepage-banners.spec.ts` | Banner links: no 404, no homepage redirect |
-| 16 | `footer-validation.spec.ts` | Footer links, contact info, platform & payment icons |
-| 17 | `hamburger-menu.spec.ts` | Hamburger menu items, dropdowns, redirects |
-| 18 | `login-page.spec.ts` | Login via header + hamburger → OTP screen |
-| 19 | `pincode.spec.ts` | Pincode panel, login redirect |
-| 20 | `search-products.spec.ts` | Product search results count |
-| 21 | `trackOrder.spec.ts` | Track order with invalid ID error |
-| 22 | `get-app.spec.ts` | GET APP → Play Store / App Store |
-| 23 | `whatsapp-icon.spec.ts` | WhatsApp icon redirect |
-| 24 | `shop-on-app.spec.ts` | Shop on App button from PDP |
-| 25 | `pdp-radio-logo.spec.ts` | PDP radio variants + logo redirect |
-| 26 | `homepage-banners.spec.ts` | Banner 404 and redirect validation |
+| # | Spec File | What It Tests | Status |
+|---|---|---|---|
+| 1 | `place-order.spec.ts` | Full E2E order via UPI | ✅ |
+| 2 | `place-order-upi.spec.ts` | UPI payment with coupon — full order | ✅ |
+| 3 | `place-order-netbanking.spec.ts` | NetBanking payment — full order | ✅ |
+| 4 | `place-order-best-price.spec.ts` | Best Price Online coupon + order | ✅ |
+| 5 | `best-price-online.spec.ts` | Online payment coupon → checkout with coupon in URL | ✅ |
+| 6 | `free-gift-checkout.spec.ts` | Free gift (Honey 250g) selection + order | ✅ |
+| 7 | `coupon-upi-checkout.spec.ts` | Coupon "Save 5" applied + UPI order | ✅ |
+| 8 | `eta-verification.spec.ts` | ETA match across PDP → Checkout → Thank You | ✅ |
+| 9 | `cart-checkout.spec.ts` | Product name consistency: Listing → Cart → Checkout | ✅ |
+| 10 | `hero-products.spec.ts` | Search 7 hero products, verify ATC + Buy Now | ✅ |
+| 11 | `concerns.spec.ts` | SELECT CONCERN tiles: image + name validation | ⚠️ |
+| 12 | `concern-products-crawl.spec.ts` | All concern categories → all products ATC + Buy Now | ✅ |
+| 13 | `bestsellers.spec.ts` | Bestsellers section product cards | ✅ |
+| 14 | `new-arrivals.spec.ts` | New Arrivals section product cards | ✅ |
+| 15 | `homepage-banners.spec.ts` | Banner links: no 404, no homepage redirect | ⚠️ |
+| 16 | `footer-validation.spec.ts` | Footer links, contact info, platform & payment icons | ⚠️ |
+| 17 | `hamburger-menu.spec.ts` | Hamburger menu items, dropdowns, redirects | ✅ |
+| 18 | `login-page.spec.ts` | Login via header + hamburger → OTP screen | ✅ |
+| 19 | `pincode.spec.ts` | Pincode panel apply + login redirect | ✅ |
+| 20 | `search-products.spec.ts` | Product search results count | ✅ |
+| 21 | `trackOrder.spec.ts` | Track order with invalid ID → error message | ✅ |
+| 22 | `get-app.spec.ts` | GET APP button → Play Store redirect | ✅ |
+| 23 | `whatsapp-icon.spec.ts` | WhatsApp icon href validation | ✅ |
+| 24 | `shop-on-app.spec.ts` | Shop on App button → App Store redirect | ✅ |
+| 25 | `pdp-radio-logo.spec.ts` | PDP radio variants + Kapiva logo redirect | ✅ |
+| 26 | `pdp-share-copy-link.spec.ts` | PDP Share button → all options + Copy Link clipboard | ✅ |
+| 27 | `inspect.spec.ts` | DOM inspection utility for debugging | ✅ |
+
+> ⚠️ — Known staging environment issues (not test code bugs):
+> - `concerns.spec.ts` — Gym Foods tile image broken on CDN
+> - `homepage-banners.spec.ts` — `/solution/` concern pages return soft 404
+> - `footer-validation.spec.ts` — `/media/` page returns 404 on staging
+
+---
+
+## Shared Utilities
+
+### `utils/helpers.ts`
+
+| Function | Description |
+|---|---|
+| `navigateTo(page, url, options?)` | Retry-enabled `page.goto` — retries on `ERR_TIMED_OUT`, `ERR_ABORTED`, `net::ERR*` |
+| `closePopupIfPresent(page)` | Dismisses staging popup via `window.hideStagingPopup()` with click fallback |
+
+Always use `navigateTo` instead of bare `page.goto` for automatic retry behavior.
+
+### `utils/globalSetup.ts`
+
+Pings `https://staging.kapiva.in` before any test runs. If staging is unreachable, the suite aborts early with a clear error.
 
 ---
 
@@ -130,6 +144,8 @@ npx playwright install
 
 ### Run all regression tests
 ```bash
+npm test
+# or
 npx playwright test tests/regression/
 ```
 
@@ -138,28 +154,39 @@ npx playwright test tests/regression/
 npx playwright test tests/regression/hero-products.spec.ts
 ```
 
-### Run with HTML report
-```bash
-npx playwright test tests/regression/ --reporter=html
-npx playwright show-report
-```
-
-### Run with Allure report
-```bash
-npx playwright test tests/regression/
-npx allure generate allure-results --clean -o allure-report
-npx allure open allure-report
-```
-
 ### Run in headed mode (see browser)
 ```bash
-npx playwright test tests/regression/ --headed
+npm run test:headed
 ```
 
 ### Run in debug mode
 ```bash
-npx playwright test tests/regression/hero-products.spec.ts --debug
+npm run test:debug
 ```
+
+### Run with Allure report
+```bash
+npm run test:allure
+```
+
+### Generate & open Allure report separately
+```bash
+npm run allure:generate
+npm run allure:open
+```
+
+---
+
+## NPM Scripts
+
+| Script | Command |
+|---|---|
+| `npm test` | Run all tests headless |
+| `npm run test:headed` | Run with visible browser |
+| `npm run test:debug` | Run in Playwright debug mode |
+| `npm run allure:generate` | Generate Allure report from results |
+| `npm run allure:open` | Open Allure report in browser |
+| `npm run test:allure` | Run tests + generate + open Allure |
 
 ---
 
@@ -168,52 +195,55 @@ npx playwright test tests/regression/hero-products.spec.ts --debug
 | Setting | Value |
 |---|---|
 | Base URL | `https://staging.kapiva.in` |
-| Browser | Chrome (Chromium) |
-| Viewport | 1512 × 861 |
+| Browser | Chrome (Mobile Chrome emulation) |
+| Viewport | 390 × 844 |
 | Timeout | 90,000 ms |
 | Retries (CI) | 2 |
-| Parallel | Yes (local), 1 worker (CI) |
+| Workers (CI) | 1 |
+| Workers (local) | Auto |
 | Screenshot | On failure only |
 | Video | Retained on failure |
 | Trace | On first retry |
+| Global Setup | `utils/globalSetup.ts` |
 
 ---
 
 ## CI/CD
 
-Tests run automatically via **GitHub Actions** on every push.
+Tests are triggered **manually only** via `workflow_dispatch` in GitHub Actions.
 
 ```
 .github/workflows/playwright.yml
 ```
 
-To view results go to: `Actions` tab in the GitHub repository.
+To run: Go to **Actions** tab → **Playwright Regression Suite** → **Run workflow**.
 
 ---
 
-## Page Object Model
+## Known Staging Issues
 
-All tests use the POM pattern — spec files contain only test logic, all selectors and interactions live in page objects.
+The following failures are **staging environment bugs**, not test code issues:
 
-```
-Spec File  →  Page Object  →  Browser
-```
+| Issue | Affected Spec |
+|---|---|
+| Gym Foods tile image broken on CDN (404) | `concerns.spec.ts` |
+| `/solution/` concern pages show soft 404 | `homepage-banners.spec.ts` |
+| `/media/` footer link returns 404 | `footer-validation.spec.ts` |
+| Contact Us in hamburger menu shows "Not Found" | `hamburger-menu.spec.ts` (soft assertion) |
 
-**Example:**
-```typescript
-// tests/regression/login-page.spec.ts
-const loginPage = new LoginPage(page);
-await loginPage.openHomePage();
-await loginPage.closePopupIfPresent();
-await loginPage.clickHeaderLoginButton();
-await loginPage.enterPhoneNumber('7411849065');
-await loginPage.clickSubmit();
-const { otpBoxCount } = await loginPage.verifyOTPScreen('7411849065');
-```
+---
+
+## Test Account
+
+| Field | Value |
+|---|---|
+| Phone | `7411849065` |
+| UPI ID | `test123@upi` |
+| Environment | Staging only |
 
 ---
 
 ## Author
 
-**Santosh Kumbar**  
+**Santosh Kumbar**
 QA Automation Engineer — Kapiva
