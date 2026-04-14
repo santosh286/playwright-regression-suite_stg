@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-import { CheckoutPage } from '../../pages/CheckoutPage';
+import { CheckoutPage } from '../pages/CheckoutPage';
 
 test('inspect location button', async ({ page }) => {
   const checkout = new CheckoutPage(page);

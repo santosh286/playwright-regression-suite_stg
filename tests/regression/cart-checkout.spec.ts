@@ -1,29 +1,27 @@
 import { test, expect } from '@playwright/test';
-import { PincodePage } from '../../pages/PincodePage';
-import { CheckoutPage } from '../../pages/CheckoutPage';
+import { navigateTo } from '../../utils/helpers';
 
 test.describe('Cart & Checkout — Product Name Consistency', () => {
 
   test('Gym concern → Shilajit Gold ATC → Cart → Checkout → verify product name', async ({ page }) => {
     test.setTimeout(120000);
-    const pincodePage = new PincodePage(page);
-    const checkout    = new CheckoutPage(page);
 
-    /* ── Step 1: Open staging homepage ─────────────────────── */
-    await pincodePage.navigate();
+    await navigateTo(page, 'https://staging.kapiva.in/', { waitUntil: 'domcontentloaded' });
     console.log('\n✅ Step 1: Homepage opened');
 
-    /* ── Step 2: Close popup ────────────────────────────────── */
-    await checkout.closePopupIfPresent();
+    await page.evaluate(() => {
+      if (typeof (window as any).hideStagingPopup === 'function') {
+        (window as any).hideStagingPopup();
+      }
+    });
+    await page.waitForTimeout(500);
     console.log('✅ Step 2: Popup dismissed');
 
-    /* ── Step 3: Navigate to Gym Foods concern page ─────────── */
     await page.goto('https://staging.kapiva.in/solution/gym-fitness/', { waitUntil: 'domcontentloaded', timeout: 20000 });
     await page.waitForTimeout(1500);
     expect(page.url()).toMatch(/gym/i);
     console.log(`✅ Step 3: Gym concern page → ${page.url()}`);
 
-    /* ── Step 4: Find Shilajit Gold Resin (id=1405) → ATC ───── */
     await page.evaluate(async () => {
       for (let y = 0; y < 3000; y += 300) {
         window.scrollTo(0, y);
@@ -35,19 +33,16 @@ test.describe('Cart & Checkout — Product Name Consistency', () => {
     const shilajitCard = page.locator('[data-product-id="1405"]').first();
     await shilajitCard.waitFor({ state: 'attached', timeout: 10000 });
 
-    const pdpProductName = await shilajitCard.locator('h2').first()
-      .innerText({ timeout: 3000 }).catch(() => 'Shilajit Gold Resin');
+    const pdpProductName = await shilajitCard.locator('h2').first().innerText({ timeout: 3000 }).catch(() => 'Shilajit Gold Resin');
     console.log(`✅ Step 4: Product found — "${pdpProductName}"`);
     expect(pdpProductName).toMatch(/shilajit gold resin/i);
 
-    // Click Add to Cart (SVG button)
     const atcBtn = shilajitCard.locator('button').filter({ has: page.locator('svg') }).first();
     await atcBtn.waitFor({ state: 'visible', timeout: 5000 });
     await atcBtn.click({ force: true });
     await page.waitForTimeout(2000);
     console.log('✅ Step 4: Add to Cart clicked');
 
-    /* ── Step 5: Click Cart icon in header ──────────────────── */
     const cartBtn = page.locator('header button').filter({ hasText: /^\d+$/ }).first();
     await cartBtn.waitFor({ state: 'visible', timeout: 5000 });
     const cartCount = await cartBtn.innerText();
@@ -56,7 +51,6 @@ test.describe('Cart & Checkout — Product Name Consistency', () => {
     await cartBtn.click();
     await page.waitForTimeout(2000);
 
-    /* ── Step 6: Verify product name in cart ────────────────── */
     const cartPanel = page.locator('[class*="pointer-events-auto"][class*="fixed"][class*="inset-y-0"]').first();
     await cartPanel.waitFor({ state: 'attached', timeout: 10000 });
 
@@ -65,7 +59,6 @@ test.describe('Cart & Checkout — Product Name Consistency', () => {
     console.log(`✅ Step 6: Product in cart — ${cartHasProduct ? '✅ "Shilajit Gold Resin" found' : '❌ NOT found'}`);
     expect(cartHasProduct, 'Shilajit Gold Resin should be visible in cart').toBe(true);
 
-    /* ── Step 7: Click Checkout ─────────────────────────────── */
     const checkoutLink = page.locator('a[href*="checkout"]').first();
     await checkoutLink.waitFor({ state: 'visible', timeout: 5000 });
     await checkoutLink.click();
@@ -76,7 +69,6 @@ test.describe('Cart & Checkout — Product Name Consistency', () => {
     console.log(`✅ Step 7: Checkout page → ${checkoutUrl}`);
     expect(checkoutUrl).toMatch(/checkout/i);
 
-    /* ── Step 8: Verify product name on checkout page ───────── */
     await page.evaluate(async () => {
       for (let y = 0; y < 2000; y += 300) {
         window.scrollTo(0, y);
@@ -93,7 +85,6 @@ test.describe('Cart & Checkout — Product Name Consistency', () => {
     console.log(`✅ Step 8: Product on checkout — "${checkoutProductName}"`);
     expect(checkoutProductName).toMatch(/shilajit gold resin/i);
 
-    /* ── Summary ─────────────────────────────────────────────── */
     console.log('\n' + '═'.repeat(60));
     console.log('  PRODUCT NAME CONSISTENCY — SUMMARY');
     console.log('═'.repeat(60));

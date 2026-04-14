@@ -1,10 +1,16 @@
 import { test } from '@playwright/test';
-import { CheckoutPage } from '../../pages/CheckoutPage';
+import { navigateTo } from '../../utils/helpers';
 
 test('inspect download app in menu', async ({ page }) => {
-  const checkout = new CheckoutPage(page);
-  await checkout.openHomePage();
-  await checkout.closePopupIfPresent();
+  await navigateTo(page, 'https://staging.kapiva.in/', { waitUntil: 'domcontentloaded', timeout: 60000 });
+
+  await page.evaluate(() => {
+    if (typeof (window as any).hideStagingPopup === 'function') {
+      (window as any).hideStagingPopup();
+    }
+  });
+  await page.waitForTimeout(500);
+
   await page.locator('//button[@class="h-full px-1 lg:order-2 "]').click();
   await page.waitForTimeout(1500);
 

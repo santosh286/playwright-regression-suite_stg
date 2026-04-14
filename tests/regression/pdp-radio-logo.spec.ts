@@ -1,21 +1,23 @@
 import { test, expect } from '@playwright/test';
-import { CheckoutPage } from '../../pages/CheckoutPage';
+import { navigateTo } from '../../utils/helpers';
 
 test.describe('PDP — Radio Buttons & Logo Redirect', () => {
 
   test('Homepage → Gym concern → Shilajit Gold PDP → radio buttons → logo → homepage', async ({ page }) => {
     test.setTimeout(120000);
-    const checkout = new CheckoutPage(page);
 
-    /* ── Step 1: Open homepage ──────────────────────────────── */
-    await checkout.openHomePage();
+    await navigateTo(page, 'https://staging.kapiva.in/', { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await expect(page).toHaveTitle(/KAPIVA/i);
     console.log('\n✅ Step 1: Homepage opened');
 
-    /* ── Step 2: Close popup ────────────────────────────────── */
-    await checkout.closePopupIfPresent();
+    await page.evaluate(() => {
+      if (typeof (window as any).hideStagingPopup === 'function') {
+        (window as any).hideStagingPopup();
+      }
+    });
+    await page.waitForTimeout(500);
     console.log('✅ Step 2: Popup dismissed');
 
-    /* ── Step 3: Verify SELECT CONCERN tiles → navigate to Gym ─ */
     await page.evaluate(async () => {
       for (let y = 0; y < 3000; y += 300) {
         window.scrollTo(0, y);
@@ -25,28 +27,23 @@ test.describe('PDP — Radio Buttons & Logo Redirect', () => {
     });
     await page.waitForTimeout(1000);
 
-    // Verify Gym tile exists in DOM
     const gymHref = await page.evaluate(() => {
-      const a = Array.from(document.querySelectorAll('article a[href*="solution"]'))
-        .find((el: any) => /^gym$/i.test(el.textContent?.trim()));
+      const a = Array.from(document.querySelectorAll('article a[href*="solution"]')).find((el: any) => /^gym$/i.test(el.textContent?.trim()));
       return (a as HTMLAnchorElement)?.href || '';
     });
     expect(gymHref, 'Gym concern tile should exist on homepage').toBeTruthy();
 
     const tiles = await page.evaluate(() =>
-      Array.from(document.querySelectorAll('article a[href*="solution"]'))
-        .slice(0, 6).map((a: any) => `"${a.textContent?.trim()?.slice(0, 10)}" → ${a.href}`)
+      Array.from(document.querySelectorAll('article a[href*="solution"]')).slice(0, 6).map((a: any) => `"${a.textContent?.trim()?.slice(0, 10)}" → ${a.href}`)
     );
     console.log('✅ Step 3: SELECT CONCERN tiles:');
     tiles.forEach(t => console.log(`   ${t}`));
 
-    // Navigate to Gym Foods page
     await page.goto('https://staging.kapiva.in/solution/gym-fitness/', { waitUntil: 'domcontentloaded', timeout: 20000 });
     await page.waitForTimeout(1500);
     expect(page.url()).toMatch(/gym/i);
     console.log(`✅ Step 3: Navigated to Gym → ${page.url()}`);
 
-    /* ── Step 4: Find Shilajit Gold Resin (id=1405) → PDP ────── */
     await page.evaluate(async () => {
       for (let y = 0; y < 3000; y += 300) {
         window.scrollTo(0, y);
@@ -58,8 +55,7 @@ test.describe('PDP — Radio Buttons & Logo Redirect', () => {
     const shilajitCard = page.locator('[data-product-id="1405"]').first();
     await shilajitCard.waitFor({ state: 'attached', timeout: 10000 });
 
-    const productName = await shilajitCard.locator('h2').first()
-      .innerText({ timeout: 3000 }).catch(() => 'Shilajit Gold Resin');
+    const productName = await shilajitCard.locator('h2').first().innerText({ timeout: 3000 }).catch(() => 'Shilajit Gold Resin');
     console.log(`✅ Step 4: Found product — "${productName}" (id=1405)`);
     expect(productName).toMatch(/shilajit gold resin/i);
 
@@ -71,8 +67,6 @@ test.describe('PDP — Radio Buttons & Logo Redirect', () => {
     expect(pdpUrl).toMatch(/shilajit/i);
     console.log(`✅ Step 4: PDP opened → ${pdpUrl}`);
 
-    /* ── Step 5: Get all radio button details ───────────────── */
-    // Scroll PDP to ensure all variants are rendered
     await page.evaluate(async () => {
       for (let y = 0; y < 2000; y += 300) {
         window.scrollTo(0, y);
@@ -86,24 +80,15 @@ test.describe('PDP — Radio Buttons & Logo Redirect', () => {
       return Array.from(document.querySelectorAll('input[type="radio"]')).map((inp: any) => {
         const label = document.querySelector(`label[for="${inp.id}"]`) as HTMLElement | null;
         const labelText = label?.textContent?.trim() || '';
-
-        // Label text is JSON — parse pack and quantity
         let pack = '', quantity = '';
         try {
           const parsed = JSON.parse(labelText);
-          pack     = parsed.pack || '';
+          pack = parsed.pack || '';
           quantity = parsed.quantity || '';
         } catch {
           pack = labelText.slice(0, 40);
         }
-
-        return {
-          id:       inp.id,
-          value:    inp.value,
-          checked:  inp.checked,
-          pack,
-          quantity,
-        };
+        return { id: inp.id, value: inp.value, checked: inp.checked, pack, quantity };
       });
     });
 
@@ -117,24 +102,17 @@ test.describe('PDP — Radio Buttons & Logo Redirect', () => {
     });
     console.log('─'.repeat(60));
 
-    // Assertions
     expect(radioDetails.length, 'PDP should have at least 1 variant radio button').toBeGreaterThan(0);
-
     const selectedCount = radioDetails.filter(r => r.checked).length;
     expect(selectedCount, 'Exactly 1 radio should be selected by default').toBe(1);
-
     for (const r of radioDetails) {
       expect(r.value, `Radio (id=${r.id}) should have a value`).toBeTruthy();
     }
-
     console.log(`\n   ${selectedCount} radio selected by default ✅`);
     console.log(`   All ${radioDetails.length} radios have valid values ✅`);
 
-    /* ── Step 6: Click Kapiva logo → verify homepage redirect ── */
-    // Logo is the first anchor in header pointing to the homepage root
     const logoLink = page.locator('header a[href="https://staging.kapiva.in/"]').first();
     await logoLink.waitFor({ state: 'attached', timeout: 10000 });
-
     const logoHref = await logoLink.evaluate((el: any) => el.href);
     console.log(`\n✅ Step 6: Kapiva logo found (href="${logoHref}")`);
     expect(logoHref).toMatch(/staging\.kapiva\.in\/?$/);
@@ -145,12 +123,8 @@ test.describe('PDP — Radio Buttons & Logo Redirect', () => {
 
     const finalUrl = page.url();
     console.log(`✅ Step 6: Logo clicked → redirected to: ${finalUrl}`);
-    expect(
-      finalUrl === 'https://staging.kapiva.in/' || finalUrl === 'https://staging.kapiva.in',
-      `Logo should redirect to homepage. Got: ${finalUrl}`
-    ).toBe(true);
+    expect(finalUrl === 'https://staging.kapiva.in/' || finalUrl === 'https://staging.kapiva.in', `Logo should redirect to homepage. Got: ${finalUrl}`).toBe(true);
 
-    /* ── Summary ─────────────────────────────────────────────── */
     console.log('\n' + '═'.repeat(65));
     console.log('  PDP RADIO & LOGO — SUMMARY');
     console.log('═'.repeat(65));

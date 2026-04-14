@@ -1,6 +1,202 @@
 import { test, expect } from '@playwright/test';
-import { CheckoutPage } from '../../pages/CheckoutPage';
-import { ConcernPage, ConcernResult, ProductResult } from '../../pages/ConcernPage';
+import { navigateTo } from '../../utils/helpers';
+
+interface ProductResult {
+  productId: string;
+  productName: string;
+  addToCartVisible: boolean;
+  addToCartClicked: boolean;
+  buyNowVisible: boolean;
+  buyNowClicked: boolean;
+  error?: string;
+}
+
+interface ConcernResult {
+  concernName: string;
+  listingUrl: string;
+  productCount: number;
+  products: ProductResult[];
+  error?: string;
+}
+
+async function openHomePage(page: any) {
+  await navigateTo(page, 'https://staging.kapiva.in/', { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await expect(page).toHaveTitle(/KAPIVA/i);
+}
+
+async function closePopupIfPresent(page: any) {
+  await page.evaluate(() => { if (typeof (window as any).hideStagingPopup === 'function') (window as any).hideStagingPopup(); });
+  await page.waitForTimeout(500);
+}
+
+async function getAllConcerns(page: any): Promise<{ name: string; href: string }[]> {
+  await page.evaluate(() => window.scrollBy(0, 200));
+  await page.waitForTimeout(800);
+
+  const pillNames: string[] = await page.evaluate(() => {
+    const snap = document.evaluate(
+      '//div[@class="relative mb-5 lg:mb-10"]/div[contains(@class,"gap")]/*',
+      document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null
+    );
+    const names: string[] = [];
+    for (let i = 0; i < snap.snapshotLength; i++) {
+      const el = snap.snapshotItem(i) as HTMLElement;
+      const name = el.querySelector('p')?.textContent?.trim() || '';
+      names.push(/select concern/i.test(name) ? '' : name);
+    }
+    return names;
+  });
+
+  const validCount = pillNames.filter(n => n.length > 0).length;
+  console.log(`🔍 Found ${validCount} concern pills: ${pillNames.filter(n => n).map(n => `"${n}"`).join(', ')}`);
+
+  const concerns: { name: string; href: string }[] = [];
+
+  for (let i = 0; i < pillNames.length; i++) {
+    const pillName = pillNames[i];
+    if (!pillName) continue;
+
+    await page.evaluate((idx: number) => {
+      const snap = document.evaluate(
+        '//div[@class="relative mb-5 lg:mb-10"]/div[contains(@class,"gap")]/*',
+        document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null
+      );
+      const el = snap.snapshotItem(idx) as HTMLElement | null;
+      if (el) el.click();
+    }, i).catch(() => {});
+
+    await page.waitForTimeout(800);
+
+    const currentUrl = page.url();
+    if (!currentUrl.includes('staging.kapiva.in') || currentUrl !== 'https://staging.kapiva.in/') {
+      if (!currentUrl.startsWith('https://staging.kapiva.in/#') && currentUrl !== 'https://staging.kapiva.in/') {
+        await navigateTo(page, 'https://staging.kapiva.in/', { waitUntil: 'domcontentloaded', timeout: 20000 });
+        await page.evaluate(() => window.scrollBy(0, 200));
+        await page.waitForTimeout(800);
+        console.log(`  ⚠️ "${pillName}" — pill navigated away, skipping`);
+        continue;
+      }
+    }
+
+    const viewAllHref = await page.evaluate(() => {
+      const snap = document.evaluate(
+        '(//div[@class="mb-5 flex items-center justify-start lg:mb-10"])//a',
+        document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null
+      );
+      if (snap.snapshotLength === 0) return '';
+      return (snap.snapshotItem(0) as HTMLAnchorElement).href || '';
+    }).catch(() => '');
+
+    if (viewAllHref) {
+      concerns.push({ name: pillName, href: viewAllHref });
+      console.log(`  ✅ "${pillName}" → ${viewAllHref}`);
+    } else {
+      console.log(`  ⚠️ "${pillName}" — no View All link found, skipping`);
+    }
+  }
+
+  console.log(`✅ Concerns (${concerns.length}): ${concerns.map((c: { name: string }) => `"${c.name}"`).join(', ')}`);
+  return concerns;
+}
+
+async function getProductCount(page: any): Promise<number> {
+  return page.locator('[data-product-id]').count();
+}
+
+async function clickViewAll(page: any): Promise<string> {
+  const viewAll = page.locator('xpath=(//div[@class="mb-5 flex items-center justify-start lg:mb-10"])//a').first();
+  let visible = await viewAll.isVisible({ timeout: 5000 }).catch(() => false);
+
+  if (!visible) {
+    const fallback = page.locator('a').filter({ hasText: /view all/i }).first();
+    visible = await fallback.isVisible({ timeout: 5000 }).catch(() => false);
+    if (!visible) throw new Error('View All link not found');
+    await fallback.scrollIntoViewIfNeeded();
+    await fallback.click();
+  } else {
+    await viewAll.scrollIntoViewIfNeeded();
+    await viewAll.click();
+  }
+
+  await page.waitForLoadState('domcontentloaded', { timeout: 20000 });
+  await page.waitForTimeout(1000);
+  return page.url();
+}
+
+async function loadAllProducts(page: any, maxIterations = 5): Promise<void> {
+  for (let i = 0; i < maxIterations; i++) {
+    const loadMoreBtn = page.getByRole('button', { name: /load more/i });
+    const visible = await loadMoreBtn.isVisible({ timeout: 3000 }).catch(() => false);
+    if (!visible) break;
+
+    const countBefore = await page.locator('[data-product-id]').count();
+    await loadMoreBtn.scrollIntoViewIfNeeded();
+    await loadMoreBtn.click();
+
+    await page.waitForFunction(
+      (before: number) => document.querySelectorAll('[data-product-id]').length > before,
+      countBefore,
+      { timeout: 10000 }
+    ).catch(() => {});
+    await page.waitForTimeout(500);
+  }
+}
+
+async function getProductName(page: any, index: number): Promise<string> {
+  const card = page.locator('[data-product-id]').nth(index);
+  const name = await card.evaluate((el: Element) => {
+    const leaves = Array.from(el.querySelectorAll('*'))
+      .filter((e: Element) => e.children.length === 0)
+      .map((e: Element) => e.textContent?.trim() || '')
+      .filter(t =>
+        t.length > 3 && t.length < 100 &&
+        !t.includes('₹') &&
+        !/^[\d%+\-\s]+$/.test(t) &&
+        !/^(add to cart|buy now|off|sale|new|hot|view|shop)/i.test(t) &&
+        !/^(out of stock|delivered by|delivery by|arriving|expected)/i.test(t) &&
+        !/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\b/i.test(t)
+      );
+    return leaves.sort((a, b) => b.length - a.length)[0] || '';
+  });
+  return name || `Product #${index + 1}`;
+}
+
+async function getProductId(page: any, index: number): Promise<string> {
+  return (await page.locator('[data-product-id]').nth(index).getAttribute('data-product-id')) || '';
+}
+
+async function checkAddToCart(page: any, index: number): Promise<boolean> {
+  const card = page.locator('[data-product-id]').nth(index);
+  await card.scrollIntoViewIfNeeded();
+  const btn = card.locator('button').filter({ has: page.locator('svg') }).first();
+  return btn.isVisible({ timeout: 3000 }).catch(() => false);
+}
+
+async function checkBuyNow(page: any, index: number): Promise<boolean> {
+  const card = page.locator('[data-product-id]').nth(index);
+  await card.scrollIntoViewIfNeeded();
+  const btn = card.getByRole('button', { name: /buy now/i });
+  return btn.isVisible({ timeout: 3000 }).catch(() => false);
+}
+
+async function interactWithProduct(page: any, index: number, listingUrl: string): Promise<ProductResult> {
+  await navigateTo(page, listingUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await loadAllProducts(page);
+
+  const productId   = await getProductId(page, index);
+  const productName = await getProductName(page, index);
+  const atcVisible  = await checkAddToCart(page, index);
+  const bnVisible   = await checkBuyNow(page, index);
+
+  return {
+    productId,
+    productName,
+    addToCartVisible: atcVisible,
+    addToCartClicked: false,
+    buyNowVisible:    bnVisible,
+    buyNowClicked:    false,
+  };
+}
 
 test.describe('Kapiva – Concerns & Products Crawl', () => {
 
@@ -8,21 +204,15 @@ test.describe('Kapiva – Concerns & Products Crawl', () => {
 
   test('Get all concerns → click each → View All → products → Add to Cart + Buy Now', async ({ page }) => {
 
-    const checkout     = new CheckoutPage(page);
-    const concernPage  = new ConcernPage(page);
+    await openHomePage(page);
+    await closePopupIfPresent(page);
 
-    /* ── 1. Open homepage & dismiss popup ─────────────────────────── */
-    await checkout.openHomePage();
-    await checkout.closePopupIfPresent();
-
-    /* ── 2. Collect all concerns (name + href) ─────────────────────── */
-    const concerns = await concernPage.getAllConcerns();
+    const concerns = await getAllConcerns(page);
     console.log(`\n✅ Total concerns found: ${concerns.length}`);
     expect(concerns.length).toBeGreaterThan(0);
 
     const allResults: ConcernResult[] = [];
 
-    /* ── 3. Loop every concern ─────────────────────────────────────── */
     for (const concern of concerns) {
 
       console.log(`\n${'═'.repeat(60)}`);
@@ -38,36 +228,31 @@ test.describe('Kapiva – Concerns & Products Crawl', () => {
       };
 
       try {
-        /* ── 3a. Navigate directly to concern URL ────────────────── */
         await page.goto(concern.href, { waitUntil: 'domcontentloaded', timeout: 30000 });
         await page.waitForTimeout(1000);
 
-        /* ── 3b. Check if products are directly on this page ─────── */
         let listingUrl = concern.href;
-        const directCount = await concernPage.getProductCount();
+        const directCount = await getProductCount(page);
 
         if (directCount === 0) {
-          // No products here — click View All to get listing page
-          listingUrl = await concernPage.clickViewAll();
+          listingUrl = await clickViewAll(page);
         }
 
         result.listingUrl = listingUrl;
         console.log(`🔗 Listing URL: ${listingUrl}`);
 
-        /* ── 3c. Load ALL products ───────────────────────────────── */
-        await concernPage.loadAllProducts();
-        const productCount = await concernPage.getProductCount();
+        await loadAllProducts(page);
+        const productCount = await getProductCount(page);
         result.productCount = productCount;
         expect(productCount).toBeGreaterThan(0);
         console.log(`📦 Products found: ${productCount}`);
 
-        /* ── 3d. Interact with each product ─────────────────────── */
         for (let i = 0; i < productCount; i++) {
           console.log(`\n  [${i + 1}/${productCount}]`);
           let productResult: ProductResult;
 
           try {
-            productResult = await concernPage.interactWithProduct(i, listingUrl);
+            productResult = await interactWithProduct(page, i, listingUrl);
             console.log(`  📌 Name : ${productResult.productName}`);
             console.log(`  🆔 ID   : ${productResult.productId}`);
             console.log(`  🛒 ATC  : Visible=${productResult.addToCartVisible ? '✅' : '❌'} Clicked=${productResult.addToCartClicked ? '✅' : '❌'}`);
@@ -95,12 +280,10 @@ test.describe('Kapiva – Concerns & Products Crawl', () => {
       allResults.push(result);
     }
 
-    /* ── 4. Print summary ──────────────────────────────────────────── */
     printSummary(allResults);
   });
 });
 
-/* ─────────────────────────────────────────────────────────────────────── */
 function printSummary(results: ConcernResult[]) {
   console.log('\n\n');
   console.log('╔' + '═'.repeat(112) + '╗');

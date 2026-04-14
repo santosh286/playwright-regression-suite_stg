@@ -1,33 +1,50 @@
 import { test, expect } from '@playwright/test';
-import { HomePage, SearchResultsPage } from '../../pages/SearchPages';
-import { CheckoutPage } from '../../pages/CheckoutPage';
+import { navigateTo } from '../../utils/helpers';
 
 const BASE_URL = 'https://staging.kapiva.in';
 const SEARCH_KEYWORDS = ['sips', 'shilajit', 'energy', 'juice'];
 
 test('Search should show related products', async ({ page }) => {
-  const homePage    = new HomePage(page);
-  const resultsPage = new SearchResultsPage(page);
-  const checkout    = new CheckoutPage(page);
+  await navigateTo(page, BASE_URL, { waitUntil: 'domcontentloaded' });
 
-  await homePage.navigate(BASE_URL);
+  await page.evaluate(() => {
+    if (typeof (window as any).hideStagingPopup === 'function') {
+      (window as any).hideStagingPopup();
+    }
+  });
+  await page.waitForTimeout(500);
 
-  // Close staging popup if present
-  await checkout.closePopupIfPresent();
+  const searchBox = page.locator('#search-box');
+  const productCards = page.locator('[data-product-id]');
 
   for (const keyword of SEARCH_KEYWORDS) {
     console.log(`\n🔍 Searching: "${keyword}"`);
 
-    await homePage.searchProduct(keyword);
+    await expect(searchBox).toBeVisible();
+    await searchBox.fill('');
+    await searchBox.fill(keyword);
+    await searchBox.press('Enter');
 
-    await resultsPage.waitForResults();
-    await resultsPage.waitForAtLeastOneVisibleProduct();
+    await page.waitForURL(/search\?q=/, { timeout: 10000 });
+    await productCards.first().waitFor({ state: 'attached', timeout: 10000 });
 
-    const visibleCount = await resultsPage.getVisibleProductCount();
+    // Wait for at least one visible product
+    await expect.poll(async () => {
+      const count = await productCards.count();
+      for (let i = 0; i < count; i++) {
+        if (await productCards.nth(i).isVisible()) return true;
+      }
+      return false;
+    }, { timeout: 10000, message: 'No visible products found' }).toBe(true);
+
+    // Count visible products
+    const totalCards = await productCards.count();
+    let visibleCount = 0;
+    for (let i = 0; i < totalCards; i++) {
+      if (await productCards.nth(i).isVisible()) visibleCount++;
+    }
 
     console.log(`  ✅ "${keyword}" → ${visibleCount} products found`);
-
-    // ✅ Business assertion
     expect(visibleCount).toBeGreaterThan(0);
   }
 });
