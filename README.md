@@ -26,34 +26,83 @@ playwright-regression-suite_stg/
 │   └── helpers.ts                  # navigateTo() with retry + closePopupIfPresent()
 │
 ├── tests/
-│   └── regression/                 # 27 regression spec files
-│       ├── best-price-online.spec.ts
-│       ├── bestsellers.spec.ts
-│       ├── cart-checkout.spec.ts
-│       ├── concern-products-crawl.spec.ts
-│       ├── concerns.spec.ts
-│       ├── coupon-upi-checkout.spec.ts
-│       ├── eta-verification.spec.ts
-│       ├── footer-validation.spec.ts
-│       ├── free-gift-checkout.spec.ts
-│       ├── get-app.spec.ts
-│       ├── hamburger-menu.spec.ts
-│       ├── hero-products.spec.ts
+│   └── regression/                 # 53 regression spec files
+│       │
+│       │── Homepage & Header
 │       ├── homepage-banners.spec.ts
-│       ├── inspect.spec.ts
-│       ├── login-page.spec.ts
+│       ├── header-validation.spec.ts
+│       ├── hero-products.spec.ts
 │       ├── new-arrivals.spec.ts
+│       ├── bestsellers.spec.ts
+│       ├── concerns.spec.ts
+│       ├── concern-products-crawl.spec.ts
+│       ├── footer-validation.spec.ts
+│       ├── whatsapp-icon.spec.ts
+│       │
+│       │── Navigation & App
+│       ├── hamburger-menu.spec.ts
+│       ├── get-app.spec.ts
+│       ├── shop-on-app.spec.ts
+│       │
+│       │── Search & Listing
+│       ├── search-products.spec.ts
+│       ├── product-listing.spec.ts
+│       │
+│       │── Product Detail Page (PDP)
+│       ├── pdp-description.spec.ts
+│       ├── pdp-images.spec.ts
+│       ├── pdp-add-to-cart.spec.ts
+│       ├── pdp-buy-now.spec.ts
+│       ├── pdp-breadcrumb.spec.ts
 │       ├── pdp-radio-logo.spec.ts
 │       ├── pdp-share-copy-link.spec.ts
+│       ├── pdp-variant-selector.spec.ts
+│       ├── pdp-faq-accordion.spec.ts
+│       ├── pdp-reviews.spec.ts
+│       ├── pdp-related-products.spec.ts
+│       ├── pdp-benefits.spec.ts
+│       ├── pdp-how-to-use.spec.ts
+│       │
+│       │── Login & Account
+│       ├── login-page.spec.ts
+│       │
+│       │── Pincode & Delivery
 │       ├── pincode.spec.ts
+│       ├── eta-verification.spec.ts
+│       │
+│       │── Cart
+│       ├── cart-checkout.spec.ts
+│       ├── cart-sidebar-validation.spec.ts
+│       ├── cart-quantity-update.spec.ts
+│       ├── cart-empty-state.spec.ts
+│       ├── cart-multiple-items.spec.ts
+│       ├── cart-checkout-redirect.spec.ts
+│       │
+│       │── Checkout & Orders
+│       ├── checkout-page-validation.spec.ts
+│       ├── checkout-coupon-validation.spec.ts
 │       ├── place-order.spec.ts
-│       ├── place-order-best-price.spec.ts
-│       ├── place-order-netbanking.spec.ts
 │       ├── place-order-upi.spec.ts
-│       ├── search-products.spec.ts
-│       ├── shop-on-app.spec.ts
+│       ├── place-order-netbanking.spec.ts
+│       ├── place-order-best-price.spec.ts
+│       ├── best-price-online.spec.ts
+│       ├── coupon-upi-checkout.spec.ts
+│       ├── free-gift-checkout.spec.ts
 │       ├── trackOrder.spec.ts
-│       └── whatsapp-icon.spec.ts
+│       │
+│       │── Category Pages
+│       ├── category-womens-health.spec.ts
+│       ├── category-weight-management.spec.ts
+│       ├── category-gym-foods.spec.ts
+│       ├── category-mens-health.spec.ts
+│       ├── category-hair-care.spec.ts
+│       ├── category-pdp-navigation.spec.ts
+│       │
+│       └── inspect.spec.ts         # DOM inspection utility
+│
+├── docs/
+│   └── superpowers/
+│       └── plans/                  # Implementation plans
 │
 ├── .github/
 │   └── workflows/
@@ -67,42 +116,110 @@ playwright-regression-suite_stg/
 
 ---
 
-## Test Coverage (27 Specs)
+## Test Coverage (53 Specs)
 
-| # | Spec File | What It Tests | Status |
-|---|---|---|---|
-| 1 | `place-order.spec.ts` | Full E2E order via UPI | ✅ |
-| 2 | `place-order-upi.spec.ts` | UPI payment with coupon — full order | ✅ |
-| 3 | `place-order-netbanking.spec.ts` | NetBanking payment — full order | ✅ |
-| 4 | `place-order-best-price.spec.ts` | Best Price Online coupon + order | ✅ |
-| 5 | `best-price-online.spec.ts` | Online payment coupon → checkout with coupon in URL | ✅ |
-| 6 | `free-gift-checkout.spec.ts` | Free gift (Honey 250g) selection + order | ✅ |
-| 7 | `coupon-upi-checkout.spec.ts` | Coupon "Save 5" applied + UPI order | ✅ |
-| 8 | `eta-verification.spec.ts` | ETA match across PDP → Checkout → Thank You | ✅ |
-| 9 | `cart-checkout.spec.ts` | Product name consistency: Listing → Cart → Checkout | ✅ |
-| 10 | `hero-products.spec.ts` | Search 7 hero products, verify ATC + Buy Now | ✅ |
-| 11 | `concerns.spec.ts` | SELECT CONCERN tiles: image + name validation | ⚠️ |
-| 12 | `concern-products-crawl.spec.ts` | All concern categories → all products ATC + Buy Now | ✅ |
-| 13 | `bestsellers.spec.ts` | Bestsellers section product cards | ✅ |
-| 14 | `new-arrivals.spec.ts` | New Arrivals section product cards | ✅ |
-| 15 | `homepage-banners.spec.ts` | Banner links: no 404, no homepage redirect | ⚠️ |
-| 16 | `footer-validation.spec.ts` | Footer links, contact info, platform & payment icons | ⚠️ |
-| 17 | `hamburger-menu.spec.ts` | Hamburger menu items, dropdowns, redirects | ✅ |
-| 18 | `login-page.spec.ts` | Login via header + hamburger → OTP screen | ✅ |
-| 19 | `pincode.spec.ts` | Pincode panel apply + login redirect | ✅ |
-| 20 | `search-products.spec.ts` | Product search results count | ✅ |
-| 21 | `trackOrder.spec.ts` | Track order with invalid ID → error message | ✅ |
-| 22 | `get-app.spec.ts` | GET APP button → Play Store redirect | ✅ |
-| 23 | `whatsapp-icon.spec.ts` | WhatsApp icon href validation | ✅ |
-| 24 | `shop-on-app.spec.ts` | Shop on App button → App Store redirect | ✅ |
-| 25 | `pdp-radio-logo.spec.ts` | PDP radio variants + Kapiva logo redirect | ✅ |
-| 26 | `pdp-share-copy-link.spec.ts` | PDP Share button → all options + Copy Link clipboard | ✅ |
-| 27 | `inspect.spec.ts` | DOM inspection utility for debugging | ✅ |
+### Homepage & Header (9)
 
-> ⚠️ — Known staging environment issues (not test code bugs):
-> - `concerns.spec.ts` — Gym Foods tile image broken on CDN
-> - `homepage-banners.spec.ts` — `/solution/` concern pages return soft 404
-> - `footer-validation.spec.ts` — `/media/` page returns 404 on staging
+| Spec File | What It Tests |
+|---|---|
+| `homepage-banners.spec.ts` | Banner images load, links navigate correctly |
+| `header-validation.spec.ts` | Logo, search bar, LOGIN button, cart count, nav links |
+| `hero-products.spec.ts` | Hero product cards visible, ATC + Buy Now buttons |
+| `new-arrivals.spec.ts` | New Arrivals section product cards |
+| `bestsellers.spec.ts` | Bestsellers section product cards |
+| `concerns.spec.ts` | SELECT CONCERN tiles: image + name validation |
+| `concern-products-crawl.spec.ts` | All concern categories → all products ATC + Buy Now |
+| `footer-validation.spec.ts` | Footer links, contact info, platform & payment icons |
+| `whatsapp-icon.spec.ts` | WhatsApp icon href validation |
+
+### Navigation & App (3)
+
+| Spec File | What It Tests |
+|---|---|
+| `hamburger-menu.spec.ts` | Hamburger menu items, dropdowns, redirects |
+| `get-app.spec.ts` | GET APP button → Play Store redirect |
+| `shop-on-app.spec.ts` | Shop on App button → App Store redirect |
+
+### Search & Listing (2)
+
+| Spec File | What It Tests |
+|---|---|
+| `search-products.spec.ts` | Product search results count |
+| `product-listing.spec.ts` | Listing page products, prices, links |
+
+### Product Detail Page — PDP (13)
+
+| Spec File | What It Tests |
+|---|---|
+| `pdp-description.spec.ts` | Product name (H1), price (₹), MRP, description |
+| `pdp-images.spec.ts` | All product images load — 80% pass threshold |
+| `pdp-add-to-cart.spec.ts` | ADD TO CART → cart count increments |
+| `pdp-buy-now.spec.ts` | BUY NOW → redirects to checkout |
+| `pdp-breadcrumb.spec.ts` | Breadcrumb links: Home → Category → Product |
+| `pdp-radio-logo.spec.ts` | Radio variant buttons + Kapiva logo redirect |
+| `pdp-share-copy-link.spec.ts` | Share button → all options + Copy Link clipboard |
+| `pdp-variant-selector.spec.ts` | Pack size radio buttons → price updates on switch |
+| `pdp-faq-accordion.spec.ts` | FAQ section with 6 questions, click to expand |
+| `pdp-reviews.spec.ts` | Rating badge (4.6/5), Customer Reviews section |
+| `pdp-related-products.spec.ts` | Related product cards with ADD buttons |
+| `pdp-benefits.spec.ts` | Benefits, Key Ingredients, Suitable For sections |
+| `pdp-how-to-use.spec.ts` | How To Use, Customers Speak, Specs, Why Kapiva |
+
+### Login & Account (1)
+
+| Spec File | What It Tests |
+|---|---|
+| `login-page.spec.ts` | Login via header + hamburger → OTP screen |
+
+### Pincode & Delivery (2)
+
+| Spec File | What It Tests |
+|---|---|
+| `pincode.spec.ts` | Pincode panel apply + login redirect |
+| `eta-verification.spec.ts` | ETA match across PDP → Checkout → Thank You |
+
+### Cart (6)
+
+| Spec File | What It Tests |
+|---|---|
+| `cart-checkout.spec.ts` | Product name consistency: Listing → Cart → Checkout |
+| `cart-sidebar-validation.spec.ts` | Cart panel: heading, product, price, CHECKOUT button |
+| `cart-quantity-update.spec.ts` | Cart + button → quantity increases → count updates |
+| `cart-empty-state.spec.ts` | Empty cart panel shows "Your cart is empty" message |
+| `cart-multiple-items.spec.ts` | Add 2 products → both appear in cart → count = 2 |
+| `cart-checkout-redirect.spec.ts` | Cart CHECKOUT button → lands on checkout URL |
+
+### Checkout & Orders (10)
+
+| Spec File | What It Tests |
+|---|---|
+| `checkout-page-validation.spec.ts` | Phone step, Order Summary, Payment Methods, Price Summary |
+| `checkout-coupon-validation.spec.ts` | Invalid coupon → no discount applied |
+| `place-order.spec.ts` | Full E2E order via UPI |
+| `place-order-upi.spec.ts` | UPI payment with coupon — full order |
+| `place-order-netbanking.spec.ts` | NetBanking payment — full order |
+| `place-order-best-price.spec.ts` | Best Price Online coupon + order |
+| `best-price-online.spec.ts` | Online payment coupon → checkout with coupon in URL |
+| `coupon-upi-checkout.spec.ts` | Coupon "Save 5" applied + UPI order |
+| `free-gift-checkout.spec.ts` | Free gift selection + order |
+| `trackOrder.spec.ts` | Track order with invalid ID → error message |
+
+### Category Pages (6)
+
+| Spec File | What It Tests |
+|---|---|
+| `category-womens-health.spec.ts` | Women's Health listing — 7 products, names, prices, links |
+| `category-weight-management.spec.ts` | Weight Management — 9 products + click → PDP opens |
+| `category-gym-foods.spec.ts` | Gym Foods — 4 products, ATC buttons present |
+| `category-mens-health.spec.ts` | Men's Health — 9 products, all links point to staging |
+| `category-hair-care.spec.ts` | Hair Care — 9 products, 100% images load |
+| `category-pdp-navigation.spec.ts` | Click product card → PDP H1 matches → back navigation |
+
+### Utility (1)
+
+| Spec File | What It Tests |
+|---|---|
+| `inspect.spec.ts` | DOM inspection utility for debugging |
 
 ---
 
@@ -151,7 +268,12 @@ npx playwright test tests/regression/
 
 ### Run a specific spec
 ```bash
-npx playwright test tests/regression/hero-products.spec.ts
+npx playwright test tests/regression/pdp-description.spec.ts
+```
+
+### Run with a single worker (recommended for staging)
+```bash
+npx playwright test tests/regression/ --workers=1
 ```
 
 ### Run in headed mode (see browser)
@@ -230,6 +352,7 @@ The following failures are **staging environment bugs**, not test code issues:
 | `/solution/` concern pages show soft 404 | `homepage-banners.spec.ts` |
 | `/media/` footer link returns 404 | `footer-validation.spec.ts` |
 | Contact Us in hamburger menu shows "Not Found" | `hamburger-menu.spec.ts` (soft assertion) |
+| Staging server timeouts under concurrent load | Run with `--workers=1` |
 
 ---
 
