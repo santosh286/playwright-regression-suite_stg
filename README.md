@@ -26,7 +26,7 @@ playwright-regression-suite_stg/
 │   └── helpers.ts                  # navigateTo() with retry + closePopupIfPresent()
 │
 ├── tests/
-│   └── regression/                 # 53 regression spec files
+│   └── regression/                 # 61 regression spec files
 │       │
 │       │── Homepage & Header
 │       ├── homepage-banners.spec.ts
@@ -62,6 +62,14 @@ playwright-regression-suite_stg/
 │       ├── pdp-related-products.spec.ts
 │       ├── pdp-benefits.spec.ts
 │       ├── pdp-how-to-use.spec.ts
+│       ├── pdp-pincode-check.spec.ts
+│       ├── pdp-coins-display.spec.ts
+│       ├── pdp-offers-section.spec.ts
+│       ├── pdp-sticky-atc.spec.ts
+│       ├── pdp-out-of-stock.spec.ts
+│       ├── pdp-recently-viewed.spec.ts
+│       ├── pdp-rating-breakdown.spec.ts
+│       ├── pdp-social-share.spec.ts
 │       │
 │       │── Login & Account
 │       ├── login-page.spec.ts
@@ -116,7 +124,7 @@ playwright-regression-suite_stg/
 
 ---
 
-## Test Coverage (53 Specs)
+## Test Coverage (61 Specs)
 
 ### Homepage & Header (9)
 
@@ -147,7 +155,7 @@ playwright-regression-suite_stg/
 | `search-products.spec.ts` | Product search results count |
 | `product-listing.spec.ts` | Listing page products, prices, links |
 
-### Product Detail Page — PDP (13)
+### Product Detail Page — PDP (21)
 
 | Spec File | What It Tests |
 |---|---|
@@ -164,6 +172,14 @@ playwright-regression-suite_stg/
 | `pdp-related-products.spec.ts` | Related product cards with ADD buttons |
 | `pdp-benefits.spec.ts` | Benefits, Key Ingredients, Suitable For sections |
 | `pdp-how-to-use.spec.ts` | How To Use, Customers Speak, Specs, Why Kapiva |
+| `pdp-pincode-check.spec.ts` | Pincode delivery text, default pincode, clickable section |
+| `pdp-coins-display.spec.ts` | Earn Coins badge, coins count, app purchase price |
+| `pdp-offers-section.spec.ts` | Offers For You heading, BEST PRICE cards, Extra ₹X OFF |
+| `pdp-sticky-atc.spec.ts` | Sticky Add to Cart bar appears after scrolling |
+| `pdp-out-of-stock.spec.ts` | OOS product shows Out of Stock — no ATC button |
+| `pdp-recently-viewed.spec.ts` | Recently Viewed section appears after visiting PDPs |
+| `pdp-rating-breakdown.spec.ts` | Star rating (1–5) breakdown, review count |
+| `pdp-social-share.spec.ts` | Share modal — WhatsApp, Facebook, Copy Link options |
 
 ### Login & Account (1)
 
@@ -220,6 +236,19 @@ playwright-regression-suite_stg/
 | Spec File | What It Tests |
 |---|---|
 | `inspect.spec.ts` | DOM inspection utility for debugging |
+
+---
+
+## CI/CD Config Notes
+
+The following settings in `playwright.config.js` are environment-aware:
+
+| Setting | Local | CI (GitHub Actions) |
+|---|---|---|
+| `headless` | `false` (see browser) | `true` (no display) |
+| `channel` | `'chrome'` | `undefined` (Chromium) |
+| `--start-maximized` | enabled | disabled |
+| Reporter | HTML + Allure | HTML only |
 
 ---
 

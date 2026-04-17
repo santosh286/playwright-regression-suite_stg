@@ -22,7 +22,7 @@ export default defineConfig({
   }))),
 
   launchOptions: {
-    args: ['--start-maximized'],
+    args: process.env.CI ? [] : ['--start-maximized'],
   },
 
   /* Run tests in files in parallel */
@@ -34,11 +34,9 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: [
-    ['list'],
-    ['html', { open: 'never' }],
-    ['allure-playwright']
-  ],
+  reporter: process.env.CI
+    ? [['list'], ['html', { open: 'never' }]]
+    : [['list'], ['html', { open: 'never' }], ['allure-playwright']],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   timeout: 90000,
 
@@ -69,11 +67,10 @@ export default defineConfig({
     {
       name: 'Mobile Chrome',
       use: {
-       // ...devices['Pixel 5'],
-       viewport: { width: 1512, height: 861 },
+        viewport: { width: 1512, height: 861 },
         browserName: 'chromium',
-        channel: 'chrome',
-        headless: false,
+        channel: process.env.CI ? undefined : 'chrome',
+        headless: !!process.env.CI,
       }
     }
 
