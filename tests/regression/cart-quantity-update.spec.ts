@@ -36,11 +36,12 @@ test.describe('Cart — Quantity Update', () => {
     await page.waitForTimeout(2000);
     console.log('✅ Step 4: ADD TO CART clicked on product card');
 
-    // Step 5: Verify cart count = 1
+    // Step 5: Verify cart count = 1 (poll until ATC is reflected in header)
     const cartBtn = page.locator('header button').filter({ hasText: /^\d+$/ }).first();
-    await cartBtn.waitFor({ state: 'visible', timeout: 5000 });
+    await cartBtn.waitFor({ state: 'visible', timeout: 10000 });
+    await expect.poll(async () => parseInt(await cartBtn.innerText(), 10), { timeout: 15000 })
+      .toBeGreaterThanOrEqual(1);
     const initialCount = parseInt(await cartBtn.innerText(), 10);
-    expect(initialCount).toBeGreaterThanOrEqual(1);
     console.log(`✅ Step 5: Cart count = ${initialCount}`);
 
     // Step 6: Open cart panel

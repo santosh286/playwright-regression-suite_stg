@@ -26,7 +26,7 @@ playwright-regression-suite_stg/
 │   └── helpers.ts                  # navigateTo() with retry + closePopupIfPresent()
 │
 ├── tests/
-│   └── regression/                 # 61 regression spec files
+│   └── regression/                 # 67 regression spec files
 │       │
 │       │── Homepage & Header
 │       ├── homepage-banners.spec.ts
@@ -43,9 +43,17 @@ playwright-regression-suite_stg/
 │       ├── hamburger-menu.spec.ts
 │       ├── get-app.spec.ts
 │       ├── shop-on-app.spec.ts
+│       ├── back-navigation.spec.ts
+│       │
+│       │── UI / UX
+│       ├── scroll-to-top.spec.ts
+│       ├── cookie-consent.spec.ts
 │       │
 │       │── Search & Listing
 │       ├── search-products.spec.ts
+│       ├── search-empty.spec.ts
+│       ├── search-autocomplete.spec.ts
+│       ├── search-special-chars.spec.ts
 │       ├── product-listing.spec.ts
 │       │
 │       │── Product Detail Page (PDP)
@@ -124,9 +132,10 @@ playwright-regression-suite_stg/
 
 ---
 
-## Test Coverage (61 Specs)
+## Test Coverage (67 Specs)
 
 ### Homepage & Header (9)
+
 
 | Spec File | What It Tests |
 |---|---|
@@ -140,19 +149,30 @@ playwright-regression-suite_stg/
 | `footer-validation.spec.ts` | Footer links, contact info, platform & payment icons |
 | `whatsapp-icon.spec.ts` | WhatsApp icon href validation |
 
-### Navigation & App (3)
+### Navigation & App (4)
 
 | Spec File | What It Tests |
 |---|---|
 | `hamburger-menu.spec.ts` | Hamburger menu items, dropdowns, redirects |
 | `get-app.spec.ts` | GET APP button → Play Store redirect |
 | `shop-on-app.spec.ts` | Shop on App button → App Store redirect |
+| `back-navigation.spec.ts` | Browser back button navigates correctly between pages |
 
-### Search & Listing (2)
+### UI / UX (2)
+
+| Spec File | What It Tests |
+|---|---|
+| `scroll-to-top.spec.ts` | Scroll-to-top button appears after scrolling, returns to top |
+| `cookie-consent.spec.ts` | Cookie/staging banner appears, can be dismissed, stays dismissed |
+
+### Search & Listing (5)
 
 | Spec File | What It Tests |
 |---|---|
 | `search-products.spec.ts` | Product search results count |
+| `search-empty.spec.ts` | Empty search + whitespace search → no crash |
+| `search-autocomplete.spec.ts` | Type partial term → autocomplete → results page loads |
+| `search-special-chars.spec.ts` | Special chars, XSS string, numbers, long string → no crash |
 | `product-listing.spec.ts` | Listing page products, prices, links |
 
 ### Product Detail Page — PDP (21)
