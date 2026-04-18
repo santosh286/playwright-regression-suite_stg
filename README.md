@@ -250,10 +250,10 @@ playwright-regression-suite_stg/
 | `category-mens-health.spec.ts` | Men's Health — products, all links point to staging |
 | `category-hair-care.spec.ts` | Hair Care — products, 80% images load |
 | `category-pdp-navigation.spec.ts` | Click product card → PDP H1 matches → back navigation |
-| `category-ayurveda.spec.ts` | Ayurveda listing — H1, products, names, prices, links |
-| `category-skin-care.spec.ts` | Skin Care listing — H1, products, images load, links valid |
-| `category-diabetic-care.spec.ts` | Diabetic Care listing — H1, products, ATC buttons |
-| `category-filter-sort.spec.ts` | Filter & Sort UI interaction — products remain, no crash |
+| `category-ayurveda.spec.ts` | Juices listing (`/product/juices/`) — H1, products, names, prices, links |
+| `category-skin-care.spec.ts` | Hair & Skin Care listing (`/hair/`) — H1, products, images load, links |
+| `category-diabetic-care.spec.ts` | Capsules listing (`/product/capsules/`) — H1, products, ATC buttons |
+| `category-filter-sort.spec.ts` | Filter & Sort UI detected on Women's Health — no crash |
 
 ### Utility (1)
 
