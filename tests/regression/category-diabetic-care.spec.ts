@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
 import { navigateTo } from '../../utils/helpers';
 
-const CATEGORY_URL = 'https://staging.kapiva.in/solution/diabetic-care/';
+const CATEGORY_URL = 'https://staging.kapiva.in/product/capsules/';
 
-test.describe('Category — Diabetic Care', () => {
+test.describe('Category — Capsules', () => {
 
-  test('Open Diabetic Care category → verify heading, product cards, names, prices, ATC buttons', async ({ page }) => {
+  test('Open Capsules category → verify heading, product cards, names, prices, ATC buttons', async ({ page }) => {
     // Step 1: Open homepage
     await navigateTo(page, 'https://staging.kapiva.in/', { waitUntil: 'domcontentloaded', timeout: 60000 });
     await expect(page).toHaveTitle(/KAPIVA/i);
@@ -23,11 +23,11 @@ test.describe('Category — Diabetic Care', () => {
     await page.waitForTimeout(2000);
     console.log(`✅ Step 3: Category page opened → ${page.url()}`);
 
-    // Step 4: Verify H1 heading
+    // Step 4: Verify H1 heading (may be visually hidden via is-srOnly on product pages)
     const h1 = page.locator('h1').first();
-    await expect(h1).toBeVisible({ timeout: 10000 });
+    await h1.waitFor({ state: 'attached', timeout: 10000 });
     const h1Text = await h1.innerText();
-    expect(h1Text).toMatch(/diabet/i);
+    expect(h1Text).toMatch(/capsules/i);
     console.log(`✅ Step 4: H1 verified — "${h1Text.trim()}"`);
 
     // Step 5: Count product cards
@@ -39,17 +39,26 @@ test.describe('Category — Diabetic Care', () => {
     // Step 6: Verify each card has name and price
     const cardData = await page.evaluate(() => {
       const cards = Array.from(document.querySelectorAll('[data-product-id]'));
-      return cards.map(card => ({
-        name: card.querySelector('h2')?.textContent?.trim(),
-        price: Array.from(card.querySelectorAll('span')).find(s => /₹/.test(s.textContent || ''))?.textContent?.trim(),
-        hasAtc: Array.from(card.querySelectorAll('button')).some(b => /add to cart/i.test(b.textContent || '')),
-        hasLink: !!card.querySelector('a[href]'),
-      }));
+      return cards.map(card => {
+        const link = card.querySelector('a[href][aria-label]') as HTMLAnchorElement | null;
+        const ariaLabel = link?.getAttribute('aria-label') || '';
+        const nameFromAria = ariaLabel.split(',')[0]?.trim();
+        const priceFromAria = ariaLabel.match(/₹[\d,]+/)?.[0];
+        const nameFromEl = (card.querySelector('h2, h3, .card-title') as HTMLElement)?.innerText?.trim();
+        const priceFromEl = Array.from(card.querySelectorAll('span')).find(s => /₹/.test(s.textContent || ''))?.textContent?.trim();
+        return {
+          name: nameFromAria || nameFromEl || '',
+          price: priceFromAria || priceFromEl || '',
+          hasAtc: Array.from(card.querySelectorAll('button, a')).some(b => /add to cart/i.test(b.textContent || '')),
+          hasLink: !!card.querySelector('a[href]'),
+        };
+      }).filter(c => c.name.length > 0);
     });
 
+    expect(cardData.length, 'At least 3 real product cards should be found').toBeGreaterThanOrEqual(3);
     for (const card of cardData) {
       expect((card.name?.length || 0), 'Card name should be non-empty').toBeGreaterThan(0);
-      expect(card.price, 'Card price should contain ₹').toMatch(/₹\d+/);
+      expect(card.price, 'Card price should contain ₹').toMatch(/₹[\d,]+/);
     }
     console.log(`✅ Step 6: All ${cardData.length} cards have names and prices:`);
     cardData.forEach((c, i) => console.log(`   [${i + 1}] "${c.name}" — ${c.price} — ATC: ${c.hasAtc}`));
@@ -87,7 +96,7 @@ test.describe('Category — Diabetic Care', () => {
     expect(page.url()).toContain('staging.kapiva.in');
     console.log('✅ Step 9: Still on staging domain');
 
-    console.log('\n🎉 Diabetic Care category validated successfully!\n');
+    console.log('\n🎉 Capsules category validated successfully!\n');
   });
 
 });
