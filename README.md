@@ -26,7 +26,7 @@ playwright-regression-suite_stg/
 │   └── helpers.ts                  # navigateTo() with retry + closePopupIfPresent()
 │
 ├── tests/
-│   └── regression/                 # 67 regression spec files
+│   └── regression/                 # 71 regression spec files
 │       │
 │       │── Homepage & Header
 │       ├── homepage-banners.spec.ts
@@ -132,7 +132,7 @@ playwright-regression-suite_stg/
 
 ---
 
-## Test Coverage (67 Specs)
+## Test Coverage (71 Specs)
 
 ### Homepage & Header (9)
 
@@ -240,16 +240,20 @@ playwright-regression-suite_stg/
 | `free-gift-checkout.spec.ts` | Free gift selection + order |
 | `trackOrder.spec.ts` | Track order with invalid ID → error message |
 
-### Category Pages (6)
+### Category Pages (10)
 
 | Spec File | What It Tests |
 |---|---|
-| `category-womens-health.spec.ts` | Women's Health listing — 7 products, names, prices, links |
-| `category-weight-management.spec.ts` | Weight Management — 9 products + click → PDP opens |
-| `category-gym-foods.spec.ts` | Gym Foods — 4 products, ATC buttons present |
-| `category-mens-health.spec.ts` | Men's Health — 9 products, all links point to staging |
-| `category-hair-care.spec.ts` | Hair Care — 9 products, 100% images load |
+| `category-womens-health.spec.ts` | Women's Health listing — products, names, prices, links |
+| `category-weight-management.spec.ts` | Weight Management — products + click → PDP opens |
+| `category-gym-foods.spec.ts` | Gym Foods — products, ATC buttons present |
+| `category-mens-health.spec.ts` | Men's Health — products, all links point to staging |
+| `category-hair-care.spec.ts` | Hair Care — products, 80% images load |
 | `category-pdp-navigation.spec.ts` | Click product card → PDP H1 matches → back navigation |
+| `category-ayurveda.spec.ts` | Ayurveda listing — H1, products, names, prices, links |
+| `category-skin-care.spec.ts` | Skin Care listing — H1, products, images load, links valid |
+| `category-diabetic-care.spec.ts` | Diabetic Care listing — H1, products, ATC buttons |
+| `category-filter-sort.spec.ts` | Filter & Sort UI interaction — products remain, no crash |
 
 ### Utility (1)
 
