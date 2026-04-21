@@ -26,7 +26,7 @@ playwright-regression-suite_stg/
 │   └── helpers.ts                  # navigateTo() with retry + closePopupIfPresent()
 │
 ├── tests/
-│   └── regression/                 # 71 regression spec files
+│   └── regression/                 # 75 regression spec files
 │       │
 │       │── Homepage & Header
 │       ├── homepage-banners.spec.ts
@@ -132,7 +132,7 @@ playwright-regression-suite_stg/
 
 ---
 
-## Test Coverage (71 Specs)
+## Test Coverage (75 Specs)
 
 ### Homepage & Header (9)
 
@@ -225,7 +225,7 @@ playwright-regression-suite_stg/
 | `cart-multiple-items.spec.ts` | Add 2 products → both appear in cart → count = 2 |
 | `cart-checkout-redirect.spec.ts` | Cart CHECKOUT button → lands on checkout URL |
 
-### Checkout & Orders (10)
+### Checkout & Orders (14)
 
 | Spec File | What It Tests |
 |---|---|
@@ -239,6 +239,10 @@ playwright-regression-suite_stg/
 | `coupon-upi-checkout.spec.ts` | Coupon "Save 5" applied + UPI order |
 | `free-gift-checkout.spec.ts` | Free gift selection + order |
 | `trackOrder.spec.ts` | Track order with invalid ID → error message |
+| `checkout-address-form.spec.ts` | Phone step, address form fields present in DOM |
+| `checkout-payment-switch.spec.ts` | Switch Online ↔ COD payment tabs → no crash |
+| `checkout-order-summary.spec.ts` | Order summary — product name, prices, total present |
+| `checkout-cod.spec.ts` | COD option visible, selectable, page stable after selection |
 
 ### Category Pages (10)
 
