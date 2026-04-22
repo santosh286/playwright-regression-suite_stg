@@ -26,7 +26,7 @@ playwright-regression-suite_stg/
 │   └── helpers.ts                  # navigateTo() with retry + closePopupIfPresent()
 │
 ├── tests/
-│   └── regression/                 # 75 regression spec files
+│   └── regression/                 # 79 regression spec files
 │       │
 │       │── Homepage & Header
 │       ├── homepage-banners.spec.ts
@@ -132,7 +132,7 @@ playwright-regression-suite_stg/
 
 ---
 
-## Test Coverage (75 Specs)
+## Test Coverage (79 Specs)
 
 ### Homepage & Header (9)
 
@@ -258,6 +258,15 @@ playwright-regression-suite_stg/
 | `category-skin-care.spec.ts` | Hair & Skin Care listing (`/hair/`) — H1, products, images load, links |
 | `category-diabetic-care.spec.ts` | Capsules listing (`/product/capsules/`) — H1, products, ATC buttons |
 | `category-filter-sort.spec.ts` | Filter & Sort UI detected on Women's Health — no crash |
+
+### Footer & Static Pages (4)
+
+| Spec File | What It Tests |
+|---|---|
+| `footer-social-links.spec.ts` | Footer social links — Facebook, Instagram, YouTube, Twitter hrefs valid |
+| `static-about-us.spec.ts` | About Us page — no 404, heading, content, Kapiva branding present |
+| `static-contact-us.spec.ts` | Contact Us page — phone 1800-274-2575, email, content present |
+| `static-404-page.spec.ts` | Invalid URL → 404 or homepage redirect, Kapiva branding still visible |
 
 ### Utility (1)
 
